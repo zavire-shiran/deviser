@@ -1,9 +1,9 @@
-CCOPTS = -c -I include -Wall -Wextra
+CCOPTS = -c -g -I include -Wall -Wextra
 
 all: bin/deviser
 
 bin/deviser: obj/main.o obj/deviser.o
-	gcc -o bin/deviser obj/main.o obj/deviser.o
+	gcc -g -o bin/deviser obj/main.o obj/deviser.o
 
 obj/main.o: src/main.c include/deviser.h
 	gcc ${CCOPTS} -o obj/main.o src/main.c

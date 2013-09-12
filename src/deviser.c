@@ -23,13 +23,18 @@ void dump_alloc_pool(alloc_pool pool) {
   int i;
   printf("Allocation pool size: %li first free: %li\n", pool->num, pool->free);
   for(i = 0; i < pool->free; ++i) {
-    printf("%lx ", pool->cells[i]);
+    printf("%08lx ", pool->cells[i]);
     if(i % 8 == 7) {
       printf("\n");
     }
   }
 
   printf("\n");
+}
+
+void free_alloc_pool(alloc_pool pool) {
+  free(pool->cells);
+  free(pool);
 }
 
 cell_t make_int(alloc_pool pool, int64_t i) {
@@ -45,6 +50,20 @@ cell_t make_int(alloc_pool pool, int64_t i) {
   return ret;
 }
 
+cell_t make_cons(alloc_pool pool, cell_t car_cell, cell_t cdr_cell) {
+  if(pool->free >= pool->num) {
+    /* error, don't know how to signal yet, tho */
+    return -1;
+  }
+
+  cell_t ret = pool->free;
+  pool->free += 2;
+  pool->cells[ret] = car_cell << 2 | 0x2;
+  pool->cells[ret+1] = cdr_cell;
+
+  return ret;
+}
+/*
 cell_t read(alloc_pool pool, char* str, int len) {
   return -1;
 }
@@ -52,3 +71,4 @@ cell_t read(alloc_pool pool, char* str, int len) {
 cell_t eval(alloc_pool pool, cell_t form, cell_t env) {
   return -1;
 }
+*/
