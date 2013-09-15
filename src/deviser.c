@@ -23,7 +23,7 @@ void dump_alloc_pool(alloc_pool pool) {
   int i;
   printf("Allocation pool size: %li first free: %li\n", pool->num, pool->free);
   for(i = 0; i < pool->free; ++i) {
-    printf("%08lx ", pool->cells[i]);
+    printf("%016lx ", pool->cells[i]);
     if(i % 8 == 7) {
       printf("\n");
     }
