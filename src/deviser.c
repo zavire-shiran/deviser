@@ -105,13 +105,14 @@ void dump_alloc_pool(alloc_pool pool) {
 }
 
 void free_alloc_pool(alloc_pool pool) {
+    /* must free symbol tree, as well */
     free(pool->cells);
     free(pool);
 }
 
 cell_t make_int(alloc_pool pool, int64_t i) {
     if(pool->free >= pool->num) {
-	/* error, don't know how to signal yet, tho */
+	/* run the garbage collector, but that's not done yet... */
 	return -1;
     }
 
@@ -123,7 +124,11 @@ cell_t make_int(alloc_pool pool, int64_t i) {
 }
 
 cell_t make_sym(alloc_pool pool, const char* str) {
-    /* What if pool->syms is NULL? */
+    if(pool->free >= pool->num) {
+	/* run the garbage collector, but that's not done yet... */
+	return -1;
+    }
+
     sym_tree* sym_node = find_symbol_in_tree(pool->syms, str);
 
     if(sym_node == NULL) {
@@ -148,7 +153,7 @@ cell_t make_sym(alloc_pool pool, const char* str) {
 
 cell_t make_cons(alloc_pool pool, cell_t car_cell, cell_t cdr_cell) {
     if(pool->free + 1 >= pool->num) {
-	/* error, don't know how to signal yet, tho */
+	/* run the garbage collector, but that's not done yet... */
 	return -1;
     }
 
@@ -167,17 +172,33 @@ cell_t read(alloc_pool pool, char* str, int len) {
 	++i;
     }
 
-    if(str[i] == '(') {
+    if(i >= len) {
+	return -1;
     }
-    else if(isspace(str[i])) {
+
+    if(str[i] == '(') {
     }
     else {
 	int j = i + 1;
+	int isnum = isdigit(str[i]);
 	while(!isspace(str[j]) && str[j] != '(' && str[j] != ')') {
+	    isnum = isnum && isdigit(str[i]); /* doesn't cover floats, but wevs */
 	    ++j;
 	}
 
-    
+	if(isnum) {
+	    int64_t n = strtol(str + i, NULL, 10);
+	    return make_int(pool, n);
+	} else {
+	    char* s = malloc(j - i);
+	    strncpy(s, str + i, j - i);
+	    s[j-i] = '\0';
+
+	    cell_t ret = make_sym(pool, s);
+
+	    free(s);
+	    return ret;
+	}
     }
 
     return -1;

@@ -23,6 +23,9 @@ int main(int argc, char** argv) {
     make_sym(pool, "hello");
     make_sym(pool, "hi");
 
+    read(pool, "greetings", 10);
+    read(pool, "10", 3);
+
     dump_alloc_pool(pool);
     free_alloc_pool(pool);
     return 0;
